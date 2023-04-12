@@ -24,17 +24,20 @@ int main(int argc, char *argv[]){
     }
     if(b){printf("%s %s\n", input_file_name, output_file_name);}
 
-    FILE *fp = fopen(input_file_name, "r");
-    char k;
 
     int line_count = 9;
+    char **expr_matrix = allocate_matrix(line_count);
+    leer_archivo(input_file_name, expr_matrix);
+    print_matrix(expr_matrix, line_count);
 
-    char **line_matrix = malloc(sizeof(char *) * line_count);
-    for (int i = 0; i < line_count; i++)
-    {
-        line_matrix[i] = malloc(sizeof(char)*EXPR_MAX);
-    }
-    
+    fclose(fp);
+    return 0;
+}
+
+int leer_archivo(char *input_file_name, char **expr_matrix)
+{
+    FILE *fp = fopen(input_file_name, "r");
+    char k;
     int i = 0, j =0;
     while (fscanf(fp, "%c", &k) != EOF)
     {
@@ -44,10 +47,24 @@ int main(int argc, char *argv[]){
             j++;
             continue;
         }
-        line_matrix[j][i] = k;
+        expr_matrix[j][i] = k;
         i++;
     }
+    return 1;
+}
 
+char **allocate_matrix(int line_count)
+{
+    char **line_matrix = malloc(sizeof(char *) * line_count);
+    for (int i = 0; i < line_count; i++)
+    {
+        line_matrix[i] = malloc(sizeof(char)*EXPR_MAX);
+    }
+    return line_matrix;
+}
+
+void print_matrix(char** expr_matrix, int line_count)
+{
     for (int i = 0; i < line_count; i++)
     {
         for (int j = 0; j < EXPR_MAX; j++)
@@ -57,8 +74,4 @@ int main(int argc, char *argv[]){
         printf("\n");
     }
     printf("\n");
-    
-
-    fclose(fp);
-    return 0;
 }
