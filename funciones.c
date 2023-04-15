@@ -4,7 +4,7 @@
 #include "funciones.h"
 
 // Constante que define el tamaño máximo de una expresión regular
-#define EXPR_MAX 60
+#define EXPR_MAX 59
 
 // Entradas: Nombre del archivo de entrada
 // Salidas: Número de líneas del archivo
@@ -44,6 +44,7 @@ int leer_expr(char *input_file_name, char **expr_matrix)
         i++;
     }
     fclose(fp);
+
     return 1;
 }
 
@@ -56,7 +57,7 @@ char **allocate_matrix(int line_count)
     char **line_matrix = malloc(sizeof(char *) * line_count);
     for (int i = 0; i < line_count; i++)
     {
-        line_matrix[i] = malloc(sizeof(char) * EXPR_MAX);
+        line_matrix[i] = malloc(sizeof(char *) * EXPR_MAX);
     }
     return line_matrix;
 }
@@ -170,7 +171,8 @@ void print_matrix(char **expr_matrix, int line_count, int *result_arr)
         {
             printf("%c", expr_matrix[i][j]);
         }
-        printf(" %s\n", result_arr[i] ? "si" : "no");
+        printf("\n");
+        // printf(" %s\n", result_arr[i] ? "si" : "no");
     }
     printf("\n");
 }
