@@ -141,9 +141,8 @@ int *process_file(char **expr_matrix, int line_count)
 //  número de líneas del archivo, bandera -b
 // Salidas: N/A
 // Descripcion: Función que imprime los resultados
-void print_results(char **expr_matrix, int *result_arr, int line_count, int b_flag)
+void print_results(int *result_arr, int line_count, int b_flag)
 {
-    print_matrix(expr_matrix, line_count, result_arr);
     if (b_flag)
     {
         int true_count = 0;

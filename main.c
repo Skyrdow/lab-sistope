@@ -23,12 +23,11 @@ int main(int argc, char *argv[]){
     }
     if(b){printf("Entrada: %s Salida: %s\n", input_file_name, output_file_name);}
 
-    leer_archivo(input_file_name);
     int line_count = getLineCount(input_file_name);
     char **expr_matrix = allocate_matrix(line_count);
     leer_expr(input_file_name, expr_matrix);
     int *expr_result_array = process_file(expr_matrix, line_count);
-    print_results(expr_matrix, expr_result_array, line_count, b);
+    print_results(expr_result_array, line_count, b);
     create_output_file(output_file_name, expr_matrix, expr_result_array, line_count);
     
     return 0;
