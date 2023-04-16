@@ -24,10 +24,10 @@ int getLineCount(char *input_file_name)
 }
 
 // Entradas: Nombre del archivo de entrada, matriz de expresiones regulares
-// Salidas: 1 si la lectura fue exitosa, -1 si hubo un error
+// Salidas: 1 si la lectura fue exitosa
 // Descripcion: Función que lee el archivo de entrada y
 // guarda las expresiones regulares en la matriz
-int leer_expr(char *input_file_name, char **expr_matrix)
+int load_regex(char *input_file_name, char **expr_matrix)
 {
     FILE *fp = fopen(input_file_name, "r");
     char k;
@@ -78,9 +78,8 @@ int comparison_or(char check, char *comparations, int comp_count)
 // Entradas: Expresion regular, número de líneas del archivo
 // Salidas: 1 si la expresión regular es válida, 0 si no y -1 si hubo un error
 // Descripcion: Función que verifica si una expresión regular es válida
-int test_regex(char *regex, int line_count)
+int validate_regex(char *regex, int line_count)
 {
-
     int state = 1;
     int index = 0;
     char act[3] = {'A', 'C', 'T'};
@@ -127,12 +126,12 @@ int test_regex(char *regex, int line_count)
 // Entradas: Matriz de expresiones regulares, número de líneas del archivo
 // Salidas: Arreglo de resultados de las expresiones regulares
 // Descripcion: Función que procesa las expresiones regulares
-int *process_file(char **expr_matrix, int line_count)
+int *process_regex(char **expr_matrix, int line_count)
 {
     int *result_arr = malloc(sizeof(int) * line_count);
     for (int i = 0; i < line_count; i++)
     {
-        result_arr[i] = test_regex(expr_matrix[i], line_count);
+        result_arr[i] = validate_regex(expr_matrix[i], line_count);
     }
     return result_arr;
 }
@@ -141,9 +140,8 @@ int *process_file(char **expr_matrix, int line_count)
 //  número de líneas del archivo, bandera -b
 // Salidas: N/A
 // Descripcion: Función que imprime los resultados
-void print_results(int *result_arr, int line_count, int b_flag)
+void print_regex_result(int *result_arr, int line_count)
 {
-    if (b_flag)
     {
         int true_count = 0;
         int false_count = 0;
@@ -156,24 +154,6 @@ void print_results(int *result_arr, int line_count, int b_flag)
         printf("Total de expresiones que No son regulares: %d\n", false_count);
         printf("Total de lineas leídas: %d\n", line_count);
     }
-}
-
-// Entradas: Matriz de expresiones regulares,
-// número de líneas del archivo, arreglo de resultados
-// Salidas: N/A
-// Descripcion: Función que imprime la matriz de expresiones regulares
-void print_matrix(char **expr_matrix, int line_count, int *result_arr)
-{
-    for (int i = 0; i < line_count; i++)
-    {
-        for (int j = 0; j < EXPR_MAX; j++)
-        {
-            printf("%c", expr_matrix[i][j]);
-        }
-        printf("\n");
-        // printf(" %s\n", result_arr[i] ? "si" : "no");
-    }
-    printf("\n");
 }
 
 // Entradas: Nombre del archivo de salida, matriz de expresiones regulares,
@@ -202,6 +182,6 @@ void create_output_file(char *output_file_name, char **expr_matrix, int *result_
     fprintf(fp, "Total de expresiones que Si son regulares: %d\n", true_count);
     fprintf(fp, "Total de expresiones que No son regulares: %d\n", false_count);
     fprintf(fp, "Total de lineas leídas: %d\n", line_count);
-    
+
     fclose(fp);
 }
