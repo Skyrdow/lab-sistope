@@ -82,6 +82,7 @@ int validate_regex(char *regex, int line_count)
 {
     int state = 1;
     int index = 0;
+    char acgt[4] = {'A', 'C', 'G', 'T'};
     char act[3] = {'A', 'C', 'T'};
     char acg[3] = {'A', 'C', 'G'};
     char ag[2] = {'A', 'G'};
@@ -113,7 +114,8 @@ int validate_regex(char *regex, int line_count)
                 state = 1;
             break;
         case 4:
-            return 1;
+            if (comparison_or(check, acgt, 4))
+                return 1;
         default:
             printf("Algo malo ocurrió\n");
             return -1;
