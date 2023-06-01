@@ -115,13 +115,16 @@ int validate_regex(char *regex, int line_count)
             break;
         case 4:
             if (comparison_or(check, acgt, 4))
-                return 1;
+                state = 4;
+            break;
         default:
-            printf("Algo malo ocurrió\n");
-            return -1;
+            return 0;
         }
         index++;
     }
+
+    if (state == 4)
+        return 1;
     return 0;
 }
 
