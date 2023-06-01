@@ -78,7 +78,7 @@ int comparison_or(char check, char *comparations, int comp_count)
 // Entradas: Expresion regular, número de líneas del archivo
 // Salidas: 1 si la expresión regular es válida, 0 si no y -1 si hubo un error
 // Descripcion: Función que verifica si una expresión regular es válida
-int validate_regex(char *regex, int line_count)
+int validate_regex(char *regex)
 {
     int state = 1;
     int index = 0;
@@ -86,6 +86,7 @@ int validate_regex(char *regex, int line_count)
     char act[3] = {'A', 'C', 'T'};
     char acg[3] = {'A', 'C', 'G'};
     char ag[2] = {'A', 'G'};
+    char ac[2] = {'A', 'C'};
 
     while (index < EXPR_MAX)
     {
@@ -102,7 +103,9 @@ int validate_regex(char *regex, int line_count)
         case 2:
             if (check == 'T')
                 state = 3;
-            if (comparison_or(check, acg, 3))
+            if (check == 'G')
+                state = 2;
+            if (comparison_or(check, ac, 2))
                 state = 1;
             break;
         case 3:
@@ -110,8 +113,10 @@ int validate_regex(char *regex, int line_count)
                 state = 3;
             if (check == 'C')
                 state = 4;
-            if (comparison_or(check, ag, 2))
+            if (check == 'A')
                 state = 1;
+            if (check == 'G')
+                state = 2;
             break;
         case 4:
             if (comparison_or(check, acgt, 4))
@@ -136,7 +141,7 @@ int *process_regex(char **expr_matrix, int line_count)
     int *result_arr = malloc(sizeof(int) * line_count);
     for (int i = 0; i < line_count; i++)
     {
-        result_arr[i] = validate_regex(expr_matrix[i], line_count);
+        result_arr[i] = validate_regex(expr_matrix[i]);
     }
     return result_arr;
 }
