@@ -84,8 +84,6 @@ int validate_regex(char *regex)
     int index = 0;
     char acgt[4] = {'A', 'C', 'G', 'T'};
     char act[3] = {'A', 'C', 'T'};
-    char acg[3] = {'A', 'C', 'G'};
-    char ag[2] = {'A', 'G'};
     char ac[2] = {'A', 'C'};
 
     while (index < EXPR_MAX)
