@@ -16,9 +16,10 @@ int main(int argc, char const *argv[])
     if(pid == 0){
         // close(fd[0]);
         // dup2(fd[1], STDOUT_FILENO); works
-        dup2(STDIN_FILENO, fd[0]);
         char fd_buffer[100];
         sprintf(fd_buffer, "%d", fd[1]);
+
+        printf("Soy el hijo y mi fd es %d, %d\n", fd[0], fd[1]);
 
         char* argv_exec[] = {"./worker", "2", "3", fd_buffer, NULL};
         execv("./worker", argv_exec);
