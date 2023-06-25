@@ -31,7 +31,7 @@ int main(int argc, char const* argv[]) {
         }
     }
 
-    sprintf(fd_Pbuffer, "%i", cuenta);
+    sprintf(fd_Pbuffer, "%i %i %i", cuenta, isRegex[1], isRegex[0]);
 
     write(atoi(argv[2]), fd_Pbuffer, sizeof(char) * 100);
 

@@ -4,6 +4,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "fbroker.h"
+
 int main(int argc, char const* argv[]) {
     const char* archivoEntrada = argv[1];
     const char* archivoSalida = argv[2];
@@ -47,31 +49,32 @@ int main(int argc, char const* argv[]) {
     char fd_Hbuffer[100];
     char fd_Pbuffer[100];
 
-    FILE* fp = fopen("prueba_10.txt", "r");
-    FILE* fp2 = fopen("salida.txt", "w");
+    FILE* fp_in = fopen(archivoEntrada, "r");
+    FILE* fp_out = fopen(archivoSalida, "w");
     int turno = 0;
     int fin[workers];
     memset(fin, 0, sizeof(int) * workers);
-    while (fgets(fd_Hbuffer, 100, fp) != NULL) {
+    while (fgets(fd_Hbuffer, 100, fp_in) != NULL) {
         if (fd_Hbuffer[0] == '\n') {
             continue;
         }
-        size_t len = strcspn(fd_Hbuffer, "\n");
-        if (fd_Hbuffer[len] == '\n') {
-            // Reemplazar '\n' con '\0' para terminar la cadena
-            fd_Hbuffer[len] = '\0';
-        }
-        // printf("Enviando %s\n", fd_Hbuffer);
+
+        char temp_buffer[60];
+        strncpy(temp_buffer, fd_Hbuffer, 59);
+        temp_buffer[59] = '\0';
+        strcpy(fd_Hbuffer, temp_buffer);
+
         write(pipes[turno * 2 + 1][1], fd_Hbuffer, sizeof(char) * 100);
         read(pipes[turno * 2][0], fd_Pbuffer, sizeof(char) * 100);
-        fprintf(fp2, "%s\n", fd_Pbuffer);
+        
+        fprintf(fp_out, "%s\n", fd_Pbuffer);
         fin[turno]++;
         if (fin[turno] == chunkSize) {
             fin[turno] = 0;
             turno = (turno + 1) % workers;
         }
     }
-    fclose(fp);
+    fclose(fp_in);
 
     sprintf(fd_Hbuffer, "FIN");
     int leidas[workers];
@@ -86,9 +89,9 @@ int main(int argc, char const* argv[]) {
 
     for (int i = 0; i < workers; i++) {
         printf("Soy proceso %i y lei %i lineas\n", pids[i], leidas[i]);
-        fprintf(fp2, "Soy proceso %i y lei %i lineas\n", pids[i], leidas[i]);
+        // fprintf(fp_out, "Soy proceso %i y lei %i lineas\n", pids[i], leidas[i]);
     }
-    fclose(fp2);
+    fclose(fp_out);
 
     return 0;
 }
