@@ -1,44 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
-#include "funciones.h"
+
+#define SMALLBUFFERMAX 16
 
 int main(int argc, char* argv[]) {
+    // Validar argumentos de línea de comando
     int option;
-    char* input_file_name;
-    char* output_file_name;
-    int workers;
-    int chunkSize;
+    char* archivoEntrada = NULL;
+    char* archivoSalida = NULL;
+    int workers = 0;
+    int chunkSize = 0;
     int b = 0;
     while ((option = getopt(argc, argv, "i:o:w:c:b")) != -1) {
         switch (option) {
             case 'i':
-                if (!optarg) {
-                    printf("Error: el argumento en -i es requerido\n");
-                    return 1;
-                }
-                input_file_name = optarg;
-                printf("El nombre del archivo es: %s\n", input_file_name);
+                archivoEntrada = optarg;
                 break;
             case 'o':
-                if (!optarg) {
-                    printf("Error: el argumento en -o es requerido\n");
-                    return 1;
-                }
-                output_file_name = optarg;
+                archivoSalida = optarg;
                 break;
             case 'w':
-                if (!optarg) {
-                    printf("Error: el argumento en -w es requerido\n");
-                    return 1;
-                }
                 workers = atoi(optarg);
                 break;
             case 'c':
-                if (!optarg) {
-                    printf("Error: el argumento en -c es requerido\n");
-                    return 1;
-                }
                 chunkSize = atoi(optarg);
                 break;
             case 'b':
@@ -47,36 +33,62 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int pid;
-    // 0 leer 1 escribir
-
-    pid = fork();
-
-    if (pid == -1)
-        return -1;
-    else if (pid == 0) {
-        // Hijo
-        char fd_buffer[100];
-        char chunk_buffer[100];
-        char workers_buffer[100];
-        char b_buffer[100];
-        sprintf(fd_buffer, "%d", fd[1]);
-        sprintf(chunk_buffer, "%d", chunkSize);
-        sprintf(workers_buffer, "%d", workers);
-        sprintf(b_buffer, "%d", b);
-        
-        execlp("./fbroker", "./fbroker", input_file_name, output_file_name,
-               chunk_buffer, workers_buffer, b_buffer, NULL);
+    if (archivoEntrada == NULL) {
+        printf("Error: falta nombre de archivo de entrada\n");
+        return 1;
+    }
+    if (archivoSalida == NULL) {
+        printf("Error: falta nombre de archivo de salida\n");
+        return 1;
+    }
+    if (workers <= 0) {
+        printf("Error: falta cantidad de workers\n");
+        return 1;
+    }
+    if (chunkSize <= 0) {
+        printf("Error: falta tamaño de chunk\n");
+        return 1;
     }
 
-    // int line_count = getLineCount(input_file_name);
-    // char** expr_matrix = allocate_matrix(line_count);
-    // load_regex(input_file_name, expr_matrix);
-    // int* regex_result_array = process_regex(expr_matrix, line_count);
-    // create_output_file(output_file_name, expr_matrix, regex_result_array,
-    //                    line_count);
+    if (b != 0 && b != 1) {
+        printf("Error: valor de b incorrecto\n");
+        return 1;
+    }
 
-    // if (b)
-    //     print_regex_result(regex_result_array, line_count);
+    // Ejecutar proceso broker
+    int pid = fork();
+    int fd[2];
+    if (pipe(fd) == -1)
+    {
+        printf("Error al crear el pipe\n");
+        exit(1);
+    }
+    dup2(STDOUT_FILENO, fd[1]);
+
+    if (pid < 0) {
+        printf("Error al crear proceso broker.\n");
+        return 1;
+    } else if (pid == 0) {
+        // Proceso hijo (broker)
+        dup2( fd[1], STDOUT_FILENO);
+        char str_workers[SMALLBUFFERMAX];
+        char str_chunkSize[SMALLBUFFERMAX];
+        char str_fd[SMALLBUFFERMAX];
+        char str_b[SMALLBUFFERMAX];
+        sprintf(str_workers, "%d", workers);
+        sprintf(str_chunkSize, "%d", chunkSize);
+        sprintf(str_fd, "%d", fd[1]);
+        sprintf(str_b, "%d", b);
+        char* args[] = {"broker", archivoEntrada, archivoSalida,
+                        str_workers, str_chunkSize, str_fd, str_b, NULL};
+        execv("./broker", args);
+        printf("Error al ejecutar proceso broker.\n");
+        return 1;
+    } else {
+        // Proceso padre
+        wait(NULL);  // Esperar a que el proceso hijo termine
+        // printf("Proceso padre finalizado.\n");
+    }
+
     return 0;
 }
