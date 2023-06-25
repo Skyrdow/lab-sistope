@@ -39,11 +39,11 @@ int main(int argc, char* argv[]) {
         printf("Error: falta nombre de archivo de salida\n");
         return 1;
     }
-    if (workers == 0) {
+    if (workers <= 0) {
         printf("Error: falta cantidad de workers\n");
         return 1;
     }
-    if (chunkSize == 0) {
+    if (chunkSize <= 0) {
         printf("Error: falta tamaño de chunk\n");
         return 1;
     }
@@ -60,8 +60,9 @@ int main(int argc, char* argv[]) {
         char str_chunkSize[10];
         sprintf(str_workers, "%d", workers);
         sprintf(str_chunkSize, "%d", chunkSize);
-        execl("./broker", "broker", archivoEntrada, archivoSalida, str_workers,
-              str_chunkSize, NULL);
+        char* args[] = {"broker",    archivoEntrada, archivoSalida,
+                        str_workers, str_chunkSize,  NULL};
+        execv("./broker", args);
         printf("Error al ejecutar proceso broker. 2\n");
         return 1;
     } else {

@@ -8,7 +8,6 @@ int main(int argc, char const *argv[])
     char buffer[100];
     sprintf(buffer, "%i", result);
     // write(STDOUT_FILENO, &result, sizeof(int)); works
-    dup2(STDOUT_FILENO, atoi(argv[3]));
+    // dup2(STDOUT_FILENO, atoi(argv[3]));
     write(atoi(argv[3]), &result, sizeof(int));
     return 0;
-}
