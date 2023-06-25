@@ -5,7 +5,7 @@ all:
 	gcc -o worker funciones.o worker.c
 
 run: all
-	./lab2 -i prueba_10.txt -o output.txt -w 1 -c 10 -b
+	./lab2 -i prueba_10.txt -o output.txt -w 2 -c 2 -b
 
 clean:
 	rm -f main worker

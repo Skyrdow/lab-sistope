@@ -3,6 +3,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#define SMALLBUFFERMAX 16
+
 int main(int argc, char* argv[]) {
     // Validar argumentos de línea de comando
     int option;
@@ -48,27 +50,44 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (b != 0 && b != 1) {
+        printf("Error: valor de b incorrecto\n");
+        return 1;
+    }
+
     // Ejecutar proceso broker
     int pid = fork();
+    int fd[2];
+    if (pipe(fd) == -1)
+    {
+        printf("Error al crear el pipe\n");
+        exit(1);
+    }
+    dup2(STDOUT_FILENO, fd[1]);
 
     if (pid < 0) {
         printf("Error al crear proceso broker.\n");
         return 1;
     } else if (pid == 0) {
         // Proceso hijo (broker)
-        char str_workers[10];
-        char str_chunkSize[10];
+        dup2( fd[1], STDOUT_FILENO);
+        char str_workers[SMALLBUFFERMAX];
+        char str_chunkSize[SMALLBUFFERMAX];
+        char str_fd[SMALLBUFFERMAX];
+        char str_b[SMALLBUFFERMAX];
         sprintf(str_workers, "%d", workers);
         sprintf(str_chunkSize, "%d", chunkSize);
-        char* args[] = {"broker",    archivoEntrada, archivoSalida,
-                        str_workers, str_chunkSize,  NULL};
+        sprintf(str_fd, "%d", fd[1]);
+        sprintf(str_b, "%d", b);
+        char* args[] = {"broker", archivoEntrada, archivoSalida,
+                        str_workers, str_chunkSize, str_fd, str_b, NULL};
         execv("./broker", args);
-        printf("Error al ejecutar proceso broker. 2\n");
+        printf("Error al ejecutar proceso broker.\n");
         return 1;
     } else {
         // Proceso padre
         wait(NULL);  // Esperar a que el proceso hijo termine
-        printf("Proceso padre finalizado.\n");
+        // printf("Proceso padre finalizado.\n");
     }
 
     return 0;
