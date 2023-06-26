@@ -1,8 +1,8 @@
 #include "fbroker.h"
 
-// Entradas: 
-// Salidas: 
-// Descripcion: 
+// Entradas: Número de workers
+// Salidas: Matriz de pipes
+// Descripcion: Crea 2 pipes por cada worker
 int **crear_pipes(int workers)
 {
     int **pipes;
@@ -21,7 +21,10 @@ int **crear_pipes(int workers)
     return pipes;
 }
 
-void crear_workers(int workers, int chunkSize, int **pipes, int *pids)
+
+// Entradas: Número de workers, Tamaño de chunk, Matriz de pipes, Matriz de pids
+// Descripcion: Crea los workers necesarios y almacena sus pids
+void crear_workers(int workers, int chunk_size, int **pipes, int *pids)
 {
     for (int i = 0; i < workers; i++) {
         int pid = fork();
@@ -38,7 +41,7 @@ void crear_workers(int workers, int chunkSize, int **pipes, int *pids)
             char chunks_buffer[BUFFERMAX];
             sprintf(fd_Pbuffer, "%d", pipes[2 * i][1]);
             sprintf(fd_Hbuffer, "%d", pipes[2 * i + 1][0]);
-            sprintf(chunks_buffer, "%d", chunkSize);
+            sprintf(chunks_buffer, "%d", chunk_size);
 
             char* argv_exec[] = {"./worker", chunks_buffer, fd_Pbuffer,
                                  fd_Hbuffer, NULL};
@@ -52,26 +55,33 @@ void crear_workers(int workers, int chunkSize, int **pipes, int *pids)
     }
 }
 
-void contar_lineas(int workers, int **pipes, int *l_si, int *l_no)
+// Entradas: Número de workers, Matriz de pipes, 
+//     Contador de líneas aceptadas, Contador de líneas rechazadas,
+//     Vector de líneas contadas por worker
+// Descripcion: Avisa a los workers el fin del procesamiento y cuenta
+//     las líneas aceptadas y rechazadas
+void contar_lineas(int workers, int **pipes, int *l_si, int *l_no, int *leidas)
 {
     char fd_Hbuffer[BUFFERMAX];
     char fd_Pbuffer[BUFFERMAX];
 
     sprintf(fd_Hbuffer, "FIN");
     for (int i = 0; i < workers; i++) {
-        int leidas[3];
+        int args[3];
         // Avisar workers
         write(pipes[i * 2 + 1][1], fd_Hbuffer, BUFFERMAX);
         // Recibir conteo
         read(pipes[i * 2][0], fd_Pbuffer, BUFFERMAX);
-        sscanf(fd_Pbuffer, "%i %i %i", &leidas[0], &leidas[1], &leidas[2]);
-        // printf("%s ", fd_Pbuffer);
-        // printf("%i %i %i", leidas[i][0], leidas[i][2], leidas[i][3]);
-        (*l_si) += leidas[1];
-        (*l_no) += leidas[2];
+        sscanf(fd_Pbuffer, "%i %i %i", &args[0], &args[1], &args[2]);
+        leidas[i] = args[0];
+        (*l_si) += args[1];
+        (*l_no) += args[2];
     }
 }
 
+// Entradas: Nombre del archivo de salida, Descriptor de salida de lab2, 
+//     Flag b
+// Descripcion: Imprime los resultados por la consola
 void imprimir_resultados(const char *archivoSalida, int fd_lab2, int print_flag)
 {
     FILE *fp_out = fopen(archivoSalida, "r");
@@ -89,4 +99,16 @@ void imprimir_resultados(const char *archivoSalida, int fd_lab2, int print_flag)
         contador++;
     }
     fclose(fp_out);
+}
+
+// Entradas: Nombre del archivo de salida, Matriz de pids, 
+//     Vector de líneas leídas por cada worker, Descriptor de salida de lab2
+// Descripcion: Imprime por consola el trabajo de cada worker
+void imprimir_informe_workers(int workers, int *pids, int *leidas, int fd_lab2)
+{
+    char buffer[BUFFERMAX];
+    for (int i = 0; i < workers; i++) {
+        sprintf(buffer, "El proceso %i leyo %i lineas\n", pids[i], leidas[i]);
+        write(fd_lab2, buffer, strlen(buffer));
+    }
 }

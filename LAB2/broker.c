@@ -67,11 +67,12 @@ int main(int argc, char const* argv[]) {
     fclose(fp_in);
     
     // Contar líneas
+    int leidas[workers];
     int lineas_total;
     int lineas_si = 0;
     int lineas_no = 0;
 
-    contar_lineas(workers, pipes, &lineas_si, &lineas_no);
+    contar_lineas(workers, pipes, &lineas_si, &lineas_no, leidas);
     lineas_total = lineas_si + lineas_no;
 
     close(pipes[1][1]);
@@ -85,6 +86,8 @@ int main(int argc, char const* argv[]) {
 
     // Imprimir resultados
     imprimir_resultados(archivoSalida, fd_lab2, print_flag);
+    if (print_flag)
+        imprimir_informe_workers(workers, pids, leidas, fd_lab2);
 
     return 0;
 }
