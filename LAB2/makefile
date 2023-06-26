@@ -11,8 +11,5 @@ worker:
 lab2:
 	gcc -o lab2 lab2.c
 
-run: all
-	./lab2 -i prueba_100.txt -o output.txt -n 3 -c 20 -b
-
 clean:
 	rm -f *.o broker worker lab2
