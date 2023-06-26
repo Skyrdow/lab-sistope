@@ -78,14 +78,11 @@ int main(int argc, char const* argv[]) {
     close(pipes[1][1]);
     close(pipes[0][0]);
     
-    // Escribir en el archivo
-    fprintf(fp_out, "Total de expresiones que Si son regulares: %d\n", lineas_si);
-    fprintf(fp_out, "Total de expresiones que No son regulares: %d\n", lineas_no);
-    fprintf(fp_out, "Total de lineas leídas: %d\n", lineas_total);
+    // Escribir en el archivo e imprimir resultados
+    imprimir_resultados(archivoSalida, fd_lab2);
+    // Cerrar archivo
     fclose(fp_out);
 
-    // Imprimir resultados
-    imprimir_resultados(archivoSalida, fd_lab2, print_flag);
     if (print_flag)
         imprimir_informe_workers(workers, pids, leidas, fd_lab2);
 

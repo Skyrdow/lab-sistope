@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     int workers = 0;
     int chunkSize = 0;
     int b = 0;
-    while ((option = getopt(argc, argv, "i:o:w:c:b")) != -1) {
+    while ((option = getopt(argc, argv, "i:o:n:c:b")) != -1) {
         switch (option) {
             case 'i':
                 archivoEntrada = optarg;
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
             case 'o':
                 archivoSalida = optarg;
                 break;
-            case 'w':
+            case 'n':
                 workers = atoi(optarg);
                 break;
             case 'c':

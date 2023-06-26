@@ -79,26 +79,24 @@ void contar_lineas(int workers, int **pipes, int *l_si, int *l_no, int *leidas)
     }
 }
 
-// Entradas: Nombre del archivo de salida, Descriptor de salida de lab2, 
-//     Flag b
+// Entradas: Puntero al archivo de salida, Descriptor de salida de lab2, 
+//     Cantidad de líneas leídas, rechazadas y totales
 // Descripcion: Imprime los resultados por la consola
-void imprimir_resultados(const char *archivoSalida, int fd_lab2, int print_flag)
+void imprimir_resultados(FILE *fp_out, int fd_lab2, int lineas_si, int lineas_no, int lineas_total)
 {
-    FILE *fp_out = fopen(archivoSalida, "r");
-    int contador = 0;
-    
-    char file_buffer[BUFFERMAX];
-    // Leer archivo de salida
-    while (fgets(file_buffer, BUFFERMAX, fp_out) != NULL) {
-        // Imprime si son las últimas 4 líneas
-        if (contador < LINEAS_PRINT)
-            write(fd_lab2, file_buffer, strlen(file_buffer));
-        // Imprime el contenido completo con la flag -b
-        else if (print_flag)
-            write(fd_lab2, file_buffer, strlen(file_buffer));
-        contador++;
-    }
-    fclose(fp_out);
+    char buffer[BUFFERMAX];
+    sprintf(buffer, "Total de expresiones que Si son regulares: %d\n", lineas_si);
+    fprintf(fp_out, "Total de expresiones que Si son regulares: %d\n", lineas_si);
+    write(fd_lab2, buffer, strlen(buffer));
+
+    sprintf(buffer, "Total de expresiones que No son regulares: %d\n", lineas_no);
+    fprintf(fp_out, "Total de expresiones que No son regulares: %d\n", lineas_no);
+    write(fd_lab2, buffer, strlen(buffer));
+
+    sprintf(buffer, "Total de lineas leídas: %d\n", lineas_total);
+    fprintf(fp_out, "Total de lineas leídas: %d\n", lineas_total);
+    write(fd_lab2, buffer, strlen(buffer));
+
 }
 
 // Entradas: Nombre del archivo de salida, Matriz de pids, 
