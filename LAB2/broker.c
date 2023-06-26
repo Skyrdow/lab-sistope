@@ -79,7 +79,7 @@ int main(int argc, char const* argv[]) {
     close(pipes[0][0]);
     
     // Escribir en el archivo e imprimir resultados
-    imprimir_resultados(archivoSalida, fd_lab2);
+    imprimir_resultados(fp_out, fd_lab2, lineas_si, lineas_no, lineas_total);
     // Cerrar archivo
     fclose(fp_out);
 
