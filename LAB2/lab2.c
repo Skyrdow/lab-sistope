@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <wait.h>
 
 #define SMALLBUFFERMAX 16
 
@@ -69,7 +70,6 @@ int main(int argc, char* argv[]) {
         return 1;
     } else if (pid == 0) {
         // Proceso hijo (broker)
-        dup2( fd[1], STDOUT_FILENO);
         char str_workers[SMALLBUFFERMAX];
         char str_chunkSize[SMALLBUFFERMAX];
         char str_fd[SMALLBUFFERMAX];
