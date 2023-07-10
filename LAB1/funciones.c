@@ -9,7 +9,7 @@
 // Entradas: Nombre del archivo de entrada
 // Salidas: Número de líneas del archivo
 // Descripcion: Función que cuenta el número de líneas de un archivo
-int getLineCount(char *input_file_name)
+int get_line_count(char *input_file_name)
 {
     int line_count = 1;
     FILE *fp = fopen(input_file_name, "r");

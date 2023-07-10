@@ -7,57 +7,32 @@
 // Entradas: Nombre del archivo de entrada
 // Salidas: Número de líneas del archivo
 // Descripcion: Función que cuenta el número de líneas de un archivo, ignora las lineas vacías
-int getLineCount(char *input_file_name)
+int get_line_count(char *input_file_name)
 {
-    int contadorLineas = 0;
-    int esLineaVacia = 1;
+    int lineas_count = 0;
+    int es_linea_vacia = 1;
     FILE *fp = fopen(input_file_name, "r");
     char caracter;
     while ((caracter = fgetc(fp)) != EOF) {
-        // Si encuentra un caracter que no sea de espacio en blanco, marca la línea como no vacía
+        // marcar linea vacia
         if (caracter != ' ' && caracter != '\t' && caracter != '\n' && caracter != '\r') {
-                        esLineaVacia = 0;
+            es_linea_vacia = 0;
         }
-        // Si encuentra un salto de línea, incrementa el contador de líneas si la línea no está vacía
+        // fin de linea
         if (caracter == '\n') {
-            if (!esLineaVacia)
-                contadorLineas++;
-            // Restaura la variable esLineaVacia para la siguiente línea
-            esLineaVacia = 1;
+            if (!es_linea_vacia)
+                lineas_count++;
+            es_linea_vacia = 1;
         }
     }
-    // Verifica si la última línea no está vacía
-    if (!esLineaVacia) {
-        contadorLineas++;
+    // verificador de la ultima linea
+    if (!es_linea_vacia) {
+        lineas_count++;
     }
     fclose(fp);
-    return contadorLineas;
+    return lineas_count;
 }
 
-// Entradas: Nombre del archivo de entrada, matriz de expresiones regulares
-// Salidas: 1 si la lectura fue exitosa
-// Descripcion: Función que lee el archivo de entrada y
-// guarda las expresiones regulares en la matriz
-int load_regex(char *input_file_name, char **expr_matrix)
-{
-    FILE *fp = fopen(input_file_name, "r");
-    char k;
-    int i = 0, j = 0;
-    while (fscanf(fp, "%c", &k) != EOF)
-    {
-        if (k == '\n')
-        {
-            i = 0;
-            j++;
-            continue;
-        }
-        expr_matrix[j][i] = k;
-        i++;
-    }
-    fclose(fp);
-
-    return 1;
-}
 
 // Entradas: Número de líneas del archivo
 // Salidas: Matriz de expresiones regulares
@@ -140,19 +115,6 @@ int validate_regex(char *regex)
     if (state == 4)
         return 1;
     return 0;
-}
-
-// Entradas: Matriz de expresiones regulares, número de líneas del archivo
-// Salidas: Arreglo de resultados de las expresiones regulares
-// Descripcion: Función que procesa las expresiones regulares
-int *process_regex(char **expr_matrix, int line_count)
-{
-    int *result_arr = malloc(sizeof(int) * line_count);
-    for (int i = 0; i < line_count; i++)
-    {
-        result_arr[i] = validate_regex(expr_matrix[i]);
-    }
-    return result_arr;
 }
 
 // Entradas: Matriz de expresiones regulares, arreglo de resultados,

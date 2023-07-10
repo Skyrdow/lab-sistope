@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    int line_count = getLineCount(input_file_name);
+    int line_count = get_line_count(input_file_name);
     char **expr_matrix = allocate_matrix(line_count);
     load_regex(input_file_name, expr_matrix);
     int *regex_result_array = process_regex(expr_matrix, line_count);
