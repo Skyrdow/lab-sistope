@@ -4,6 +4,107 @@
 #define EXPR_MAX 59
 #define BUFFER_MAX 100
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Entradas: Puntero a estructura HiloArgs con los argumentos del hilo
+// Descripcion: Función que será ejecutada por cada hilo para procesar el archivo
+void* hilo_procesador(void* arg) {
+    // argumentos y variables
+    HiloArgs* args = (HiloArgs*)arg;
+    int id = args->id;
+    FILE* archivo_entrada = args->archivo_entrada;
+    DatosCompartidos* dc = args->datos_compartidos;
+    int chunk_size = args->chunk_size;
+    dc->lineas_hebras[id] = 0;
+
+    // matriz de caracteres leída en el chunk
+    char **lineas_chunk = allocate_matrix(chunk_size);
+    
+    // loop principal de lectura y procesamiento
+    while (1)
+    {
+        for (int i = 0; i < chunk_size; i++)
+        {
+            lineas_chunk[i][0] = '\0'; // vaciar las lineas de chunk
+        }
+        
+        pthread_mutex_lock(&mutex);
+        if (dc->leer == 0) // detener lectura del archivo
+        {
+            pthread_mutex_unlock(&mutex);
+            pthread_exit(NULL);
+        }
+
+        // leer archivo de entrada
+        int lineas_hilo = 0;
+        int comienzo_chunk = dc->lineas_leidas;
+        char buffer[BUFFER_MAX];
+        
+        // loop de lectura de <chunk_size> lineas
+        while (1)
+        {
+            // revisar si se llegó al final del archivo
+            if (fgets(buffer, BUFFER_MAX, archivo_entrada) == NULL)
+            {
+                dc->lineas_leidas += lineas_hilo;
+                dc->leer = 0;
+                pthread_mutex_unlock(&mutex);
+                pthread_exit(NULL);
+            }
+
+            if (buffer[0] == '\n')
+                continue; // ignorar líneas vacías
+
+            buffer[EXPR_MAX] = '\0'; // truncar línea
+
+            int linea_actual = lineas_hilo + dc->lineas_leidas;
+            // guardar linea leida
+            strcpy(dc->lineas_regex[linea_actual], buffer);
+            strcpy(lineas_chunk[lineas_hilo], buffer);
+
+            lineas_hilo++;
+            // print para ver cada linea individual leída
+            // printf("id%d, a%d, h%d, %s-\n", id, linea_actual, lineas_hilo, buffer);
+            if (lineas_hilo == chunk_size) {
+                break; //cambia turno
+            }
+        }
+        dc->lineas_hebras[id] += lineas_hilo;
+        dc->lineas_leidas += lineas_hilo;
+        pthread_mutex_unlock(&mutex);
+        sleep(0.5f); // Simular cambio de contexto
+
+        // procesar regex
+        pthread_mutex_lock(&mutex);
+        for (int i = comienzo_chunk, j = 0; j < lineas_hilo; i++, j++)
+        {
+            dc->resultados_regex[i] = validate_regex(lineas_chunk[j]);
+        }
+        pthread_mutex_unlock(&mutex);
+        
+    }
+}
+
+// Entradas: Número de líneas del archivo y cantidad de hilos
+// Salidas: Estructura de datos compartidos inicializada
+// Descripcion: Inicializa la estructura de datos compartidos, sus arreglos y sus valores iniciales
+DatosCompartidos *init_datos_compartidos(int lineas_totales, int cant_hilos)
+{
+    DatosCompartidos *datos_compartidos = malloc(sizeof(DatosCompartidos));
+    datos_compartidos->lineas_leidas = 0;
+    datos_compartidos->leer = 1;
+    // arreglo de resultado del procesamiento
+    int *resultados_regex = malloc(lineas_totales * sizeof(int));
+    datos_compartidos->resultados_regex = resultados_regex;
+    // arreglo de lineas por cada hebra
+    int *lineas_hebras = malloc(cant_hilos * sizeof(int));
+    datos_compartidos->lineas_hebras = lineas_hebras;
+    // matriz de lineas del archivo
+    char **lineas_regex = allocate_matrix(lineas_totales);
+    datos_compartidos->lineas_regex = lineas_regex;
+    return datos_compartidos;
+}
+
 // Entradas: Nombre del archivo de entrada
 // Salidas: Número de líneas del archivo
 // Descripcion: Función que cuenta el número de líneas de un archivo, ignora las lineas vacías
